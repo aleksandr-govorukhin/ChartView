@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-public struct BarChartRow : View {
+public struct BarChartRow: View {
     var data: [Double]
     var accentColor: Color
     var gradient: GradientColor?
@@ -19,21 +19,30 @@ public struct BarChartRow : View {
         }
         return max != 0 ? max : 1
     }
+    
     @Binding var touchLocation: CGFloat
+    
     public var body: some View {
         GeometryReader { geometry in
-            HStack(alignment: .bottom, spacing: (geometry.frame(in: .local).width-22)/CGFloat(self.data.count * 3)){
-                ForEach(0..<self.data.count, id: \.self) { i in
-                    BarChartCell(value: self.normalizedValue(index: i),
-                                 index: i,
-                                 width: Float(geometry.frame(in: .local).width - 22),
-                                 numberOfDataPoints: self.data.count,
-                                 accentColor: self.accentColor,
-                                 gradient: self.gradient,
-                                 touchLocation: self.$touchLocation)
-                        .scaleEffect(self.touchLocation > CGFloat(i)/CGFloat(self.data.count) && self.touchLocation < CGFloat(i+1)/CGFloat(self.data.count) ? CGSize(width: 1.4, height: 1.1) : CGSize(width: 1, height: 1), anchor: .bottom)
-                        .animation(.spring())
-                    
+            HStack(alignment: .bottom, spacing: (geometry.size.width - 22) / CGFloat(data.count * 3)) {
+                ForEach(0..<data.count, id: \.self) { i in
+                    BarChartCell(
+                        value: normalizedValue(index: i),
+                        index: i,
+                        width: Float(geometry.frame(in: .local).width - 22),
+                        numberOfDataPoints: data.count,
+                        accentColor: accentColor,
+                        gradient: gradient,
+                        touchLocation: $touchLocation
+                    )
+                    .scaleEffect(
+                        touchLocation > CGFloat(i) / CGFloat(data.count)
+                        && touchLocation < CGFloat(i + 1) / CGFloat(data.count)
+                            ? CGSize(width: 1.4, height: 1.1)
+                            : CGSize(width: 1, height: 1),
+                        anchor: .bottom
+                    )
+                    .animation(.spring)
                 }
             }
             .padding([.top, .leading, .trailing], 10)
@@ -41,17 +50,21 @@ public struct BarChartRow : View {
     }
     
     func normalizedValue(index: Int) -> Double {
-        return Double(self.data[index])/Double(self.maxValue)
+        Double(data[index]) / Double(maxValue)
     }
 }
 
-#if DEBUG
-struct ChartRow_Previews : PreviewProvider {
-    static var previews: some View {
-        Group {
-            BarChartRow(data: [0], accentColor: Colors.OrangeStart, touchLocation: .constant(-1))
-            BarChartRow(data: [8,23,54,32,12,37,7], accentColor: Colors.OrangeStart, touchLocation: .constant(-1))
-        }
+#Preview {
+    VStack {
+        BarChartRow(
+            data: [0],
+            accentColor: Colors.OrangeStart,
+            touchLocation: .constant(-1)
+        )
+        BarChartRow(
+            data: [8,23,54,32,12,37,7],
+            accentColor: Colors.OrangeStart, touchLocation: .constant(-1)
+        )
     }
 }
-#endif
+

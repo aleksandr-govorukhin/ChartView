@@ -31,7 +31,7 @@ public struct BarChartView : View {
             }
         }
     }
-    var isFullWidth:Bool {
+    var isFullWidth: Bool {
         formSize == ChartForm.large
     }
     
@@ -42,7 +42,7 @@ public struct BarChartView : View {
         style: ChartStyle = Styles.barChartStyleOrangeLight,
         form: CGSize = ChartForm.medium,
         dropShadow: Bool? = true,
-        cornerImage: Image? = Image(systemName: "waveform.path.ecg"),
+        cornerImage: Image? = nil,
         valueSpecifier: String? = "%.1f",
         animatedToBack: Bool = false
     ) {
@@ -100,21 +100,21 @@ public struct BarChartView : View {
                 )
                 
                 if
-                    legend != nil
-                    && formSize == ChartForm.medium
+                    let legend,
+                    formSize == ChartForm.medium
                     && !showLabelValue
                 {
-                    Text(legend!)
+                    Text(legend)
                         .font(.headline)
                         .foregroundColor(themeLegendTextColor)
                         .padding()
                 }
-                else if (data.valuesGiven && getCurrentValue() != nil) {
+                else if let currentValue = getCurrentValue(), data.valuesGiven && !showLabelValue {
                     LabelView(
                         arrowOffset: getArrowOffset(
                             touchLocation: touchLocation
                         ),
-                        title: .constant(self.getCurrentValue()!.0)
+                        title: .constant(currentValue.0)
                     )
                     .offset(
                         x: getLabelViewOffset(touchLocation: touchLocation),
@@ -141,8 +141,8 @@ public struct BarChartView : View {
             }
             .onEnded { value in
                 if animatedToBack {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        withAnimation(Animation.easeOut(duration: 1)) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(Animation.easeOut(duration: 0.3)) {
                             showValue = false
                             showLabelValue = false
                             touchLocation = -1
@@ -173,7 +173,7 @@ public struct BarChartView : View {
         min(formSize.width - 110, max(10, (touchLocation * formSize.width) - 50))
     }
     
-    func getCurrentValue() -> (String,Double)? {
+    func getCurrentValue() -> (String, Double)? {
         guard data.points.count > 0 else {
             return nil
         }
@@ -225,11 +225,19 @@ private extension BarChartView {
 #if DEBUG
 struct ChartView_Previews : PreviewProvider {
     static var previews: some View {
+        
         BarChartView(
-            data: TestData.values ,
-            title: "Model 3 sales",
-            legend: "Quarterly",
-            valueSpecifier: "%.0f"
+            data: ChartData(values: [
+                ("2018 Q4", 63150),
+                ("2019 Q1", 50900),
+                ("2019 Q2", 77550),
+                ("2019 Q3", 79600),
+                ("2019 Q4", 92550)
+            ]),
+            title: "Sales",
+            legend: "asd",
+            form: ChartForm.large,
+            animatedToBack: true
         )
     }
 }
